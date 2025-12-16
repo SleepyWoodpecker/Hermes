@@ -9,8 +9,6 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
 
-#include "esp_rom_sys.h" // For ets_printf
-
 #include "tracer_types.h"
 #include "logger.h"
 
@@ -89,14 +87,19 @@ void Tracer::convert_argument(T arg, ConversionResult &converstion_result) {
 
     if constexpr (std::is_floating_point<T>()) {
         converstion_result.is_float = true;
-        if (sizeof(T) > sizeof(float)) {
+        if constexpr (sizeof(T) > sizeof(float)) {
             actual_val = static_cast<float>(actual_val);
         }
     } else if constexpr (std::is_signed<T>()) {
         converstion_result.is_unsigned = true;
     }
 
-    memcpy(&converstion_result.result, &arg, sizeof(uint32_t));    
+    if constexpr (sizeof(T) < sizeof(float)) {
+        uint32_t promoted_arg = static_cast<uint32_t>(arg);
+        memcpy(&converstion_result.result, &promoted_arg, sizeof(uint32_t));    
+    } else {
+        memcpy(&converstion_result.result, &arg, sizeof(uint32_t));    
+    }
 }
 
 template <typename... Args>
