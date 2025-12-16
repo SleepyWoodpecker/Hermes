@@ -6,7 +6,7 @@
 
 #define FUNC_NAME_MAX_SIZE          16
 #define MAX_NO_ARGUMENTS_TRACKED    4
-#define MAX_EXCEPTION_STRING_LENGTH 64
+#define MAX_EXCEPTION_STRING_LENGTH 128
 
 #define FIRST_ARG_IS_FLOAT          (1UL << 0)
 #define FIRST_ARG_IS_UNSIGNED       (1UL << 1)
@@ -22,6 +22,8 @@
 
 #define RETURN_VAL_IS_FLOAT         (1UL << 0)
 #define RETURN_VAL_IS_UNSIGNED      (1UL << 1)
+
+#define TRACER_TAG "TRACER"
 
 // tracer types
 enum Event_t {
@@ -65,5 +67,12 @@ struct ConversionResult {
     bool is_float = {false};
     bool is_unsigned = {false};
 };
+
+struct NVTraceEntry_t {
+    bool has_unread_panic_entry;
+    TraceEntry_t panic_entry;
+};
+
+#define NV_TRACE_SIZE sizeof(NVTraceEntry_t)
 
 #endif

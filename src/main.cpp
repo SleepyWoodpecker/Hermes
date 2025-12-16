@@ -1,9 +1,11 @@
 #include <Arduino.h>
 
 #include "tracer.h"
+#include "nv_storage.h"
 
 SerialLogger logger("\r\n");
-Tracer tracer(logger, 100);
+NVStorage storage;
+Tracer tracer(logger, storage, 100);
 
 int try_add(int a, int b) {
     tracer.trace_function_entry("try_add", a, b);
@@ -22,20 +24,32 @@ void setup() {
 
     delay(100);
 
-    xTaskCreatePinnedToCore(
-        Tracer::static_log_traces,
-        "logging task",
-        2048,
-        &tracer,
-        1,
-        NULL,
-        0
-    );
+    // register the panic handler
+    set_arduino_panic_handler(Tracer::static_panic_handler, (void *)&tracer);
+
+    // xTaskCreatePinnedToCore(
+    //     Tracer::static_log_traces,
+    //     "logging task",
+    //     2048,
+    //     &tracer,
+    //     1,
+    //     NULL,
+    //     0
+    // );
+
+    while (!storage.begin()) {
+        delay(100);
+    }
+
+    Serial.printf("Everything configured\n");
+
+    // only run the panic check after everything else has been setup
+    tracer.check_and_log_previous_panic();
 }
 
 void loop() {
     int res = try_add(3, 4);
     res = try_add(4, 5);
 
-    delay(1000);
+    for (;;) {}
 }

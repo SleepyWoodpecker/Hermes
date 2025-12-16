@@ -8,10 +8,13 @@
 
 #include "tracer_types.h"
 
+
 class TraceLogger {
     public:
+        // test that the transport method has been established
+        virtual bool begin() = 0;
         virtual void log_raw(uint8_t *data, size_t length) = 0;
-        virtual void log_pretty(TraceEntry_t *data) = 0;
+        virtual void log_pretty(TraceEntry_t &data) = 0;
 };
 
 class SerialLogger : public TraceLogger {
@@ -20,7 +23,7 @@ class SerialLogger : public TraceLogger {
 
         bool begin();
         void log_raw(uint8_t *data, size_t length);
-        void log_pretty(TraceEntry_t *data);
+        void log_pretty(TraceEntry_t &data);
 
     private:
         // require a control sequence to ensure proper syncing with serial port
