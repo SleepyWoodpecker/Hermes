@@ -2,8 +2,8 @@
 
 #include "tracer.h"
 
-Tracer::Tracer(TraceLogger &logger, NVStorage &storage, int queue_size) 
-    :_logger(&logger), _storage(&storage)
+Tracer::Tracer(TraceLogger &logger, int queue_size) 
+    :_logger(&logger)
 {
     if (!_task_message_queue) {
         _task_message_queue = xQueueCreate(queue_size, sizeof(TraceEntry_t));
@@ -33,17 +33,4 @@ void *Tracer::log_traces(void *args) {
             _logger->log_pretty(entry);
         }
     }
-}
-
-void Tracer::check_and_log_previous_panic() {
-    NVTraceEntry_t entry = {};
-    if (!_storage->read(entry) || !entry.has_unread_panic_entry) {
-        Serial.println("Found no previous panic entry");
-        return;
-    }
-
-    _logger->log_pretty(entry.panic_entry);
-
-    entry.has_unread_panic_entry = false;
-    _storage->write(entry);
 }

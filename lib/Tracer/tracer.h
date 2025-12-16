@@ -13,7 +13,6 @@
 
 #include "tracer_types.h"
 #include "logger.h"
-#include "nv_storage.h"
 
 class Tracer
 {
@@ -21,7 +20,7 @@ public:
     /**
      * @brief: initialize tracer with queue sizem, timer interrupt interval as well as method of transporting logs out of system
      */
-    Tracer(TraceLogger &logger, NVStorage &storage, int queue_size = 100);
+    Tracer(TraceLogger &logger, int queue_size = 100);
 
     /**
      * @brief: convert any generic argument into a uint32_t so that it can be stored in TraceEntry
@@ -73,14 +72,11 @@ public:
         instance->log_traces(NULL);
     }
 
-    void check_and_log_previous_panic();
-
 private:
     QueueHandle_t _task_message_queue = NULL;
     uint32_t _current_trace_id = {0};
 
     TraceLogger *_logger = nullptr;
-    NVStorage *_storage = nullptr;
 };
 
 template <typename T>
