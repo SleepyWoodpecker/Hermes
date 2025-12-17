@@ -17,10 +17,11 @@ void SerialLogger::log_raw(uint8_t *data, size_t length) {
 void SerialLogger::log_pretty(TraceEntry_t &data) {
     TraceEntry_t *entry = (TraceEntry_t *)&data;
 
-    Serial.printf("[%" PRIu32 "] Core:%ld ID:%" PRIu32 " | ", 
+    Serial.printf("[%" PRIu32 "] Core:%ld ID:%" PRIu32 "FN: %ld" " | ", 
         entry->timestamp, 
         (long)entry->core_id, 
-        entry->trace_id
+        entry->trace_id,
+        entry->function_call_id
     );
 
     switch (entry->trace_type) {

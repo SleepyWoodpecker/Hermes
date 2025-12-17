@@ -45,13 +45,13 @@ public:
      * @brief: trace entrypoint into a function
      */
     template <typename... Args>
-    void trace_function_entry(const char* func_name, Args... args);
+    void trace_function_entry(const char* func_name, int func_call_no, Args... args);
 
     /**
      * @brief: trace function exit
      */
     template <typename T>
-    void trace_function_exit(const char* func_name, T return_val, bool capture_return);
+    void trace_function_exit(const char* func_name, T return_val, int func_call_no, bool capture_return);
 
     /**
      * @brief: trace application exception, flush right after
@@ -141,12 +141,13 @@ void Tracer::fill_args(TraceFunctionEntry_t& entry, Args... args) {
 }
 
 template <typename... Args>
-void Tracer::trace_function_entry(const char* func_name, Args... args) {
+void Tracer::trace_function_entry(const char* func_name, int func_call_no, Args... args) {
     TraceEntry_t entry = {
         .trace_type = Event_t::ENTER,
         .core_id = xTaskGetCoreID(NULL),
         .timestamp = millis(),
-        .trace_id = _current_trace_id++
+        .trace_id = _current_trace_id++,
+        .function_call_id = func_call_no
     };
     
     strlcpy(entry.function_entry.func_name, func_name, FUNC_NAME_MAX_SIZE);
@@ -163,12 +164,13 @@ void Tracer::trace_function_entry(const char* func_name, Args... args) {
 }
 
 template <typename T>
-void Tracer::trace_function_exit(const char* func_name, T return_val, bool capture_return) {
+void Tracer::trace_function_exit(const char* func_name, T return_val, int func_call_no, bool capture_return) {
     TraceEntry_t entry = {
         .trace_type = Event_t::EXIT,
         .core_id = xTaskGetCoreID(NULL),
         .timestamp = millis(),
-        .trace_id = _current_trace_id++
+        .trace_id = _current_trace_id++,
+        .function_call_id = func_call_no
     };    
     strlcpy(entry.function_entry.func_name, func_name, FUNC_NAME_MAX_SIZE);
 
@@ -193,16 +195,18 @@ void Tracer::trace_function_exit(const char* func_name, T return_val, bool captu
 
 template <typename Func, typename... Args>
 decltype(auto) Tracer::trace_full_function(const char *func_name, Func&& func, Args... args) {
-    Tracer::get_instance()->trace_function_entry(func_name, args...);
+    int func_call_id = Tracer::get_instance()->_current_function_call_id++;
+
+    Tracer::get_instance()->trace_function_entry(func_name, func_call_id, args...);
 
     using func_return = std::invoke_result_t<Func>;
     if constexpr (std::is_void<func_return>()) {
         func();
-        Tracer::get_instance()->trace_function_exit(func_name, 0, false);
+        Tracer::get_instance()->trace_function_exit(func_name, 0, func_call_id, false);
         return;
     } else {
         decltype(auto) res = func();
-        Tracer::get_instance()->trace_function_exit(func_name, res, true);
+        Tracer::get_instance()->trace_function_exit(func_name, res, func_call_id, true);
         return res;
     }
 }

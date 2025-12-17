@@ -32,8 +32,8 @@ void *Tracer::log_traces(void *args) {
     TraceEntry_t entry = {};
     for (;;) {
         if (xQueueReceive(_task_message_queue, &entry, portMAX_DELAY) == pdTRUE) {
-            // _logger->log_raw(reinterpret_cast<uint8_t *>(&entry), sizeof(entry));
-            _logger->log_pretty(entry);
+            _logger->log_raw(reinterpret_cast<uint8_t *>(&entry), sizeof(entry));
+            // _logger->log_pretty(entry);
         }
     }
 }

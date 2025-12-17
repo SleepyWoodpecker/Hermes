@@ -58,6 +58,7 @@ struct TraceEntry_t {
     BaseType_t core_id;
     uint32_t timestamp;
     uint32_t trace_id;
+    uint32_t function_call_id;
     union {
         TraceFunctionEntry_t function_entry;
         TracePanicEntry_t panic_entry;
