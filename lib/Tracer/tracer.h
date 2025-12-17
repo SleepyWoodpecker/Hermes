@@ -108,7 +108,7 @@ void Tracer::convert_argument(T arg, ConversionResult &converstion_result) {
             actual_val = static_cast<float>(actual_val);
         }
     } else if constexpr (std::is_signed<T>()) {
-        converstion_result.is_unsigned = true;
+        converstion_result.is_signed = true;
     }
 
     if constexpr (sizeof(T) < sizeof(float)) {
@@ -132,7 +132,7 @@ void Tracer::fill_args(TraceFunctionEntry_t& entry, Args... args) {
         convert_argument(args, res);
         
         entry.func_arguments[i] = res.result;
-        entry.val_types |= (res.is_unsigned << (i * 2 + 1)) | (res.is_float << (i * 2));
+        entry.val_types |= (res.is_signed << (i * 2 + 1)) | (res.is_float << (i * 2));
         ++i;
     }
     (), ...);
@@ -179,7 +179,7 @@ void Tracer::trace_function_exit(const char* func_name, T return_val, int func_c
 
     if (capture_return) {
         entry.function_entry.return_val = r.result;
-        entry.function_entry.val_types = (r.is_float) | (r.is_unsigned << 1);
+        entry.function_entry.val_types = (r.is_float) | (r.is_signed << 1);
     } else {
         entry.function_entry.val_types = NO_RETURN_VALUE;
     }

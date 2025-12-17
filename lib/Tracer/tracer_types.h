@@ -9,19 +9,19 @@
 #define MAX_EXCEPTION_STRING_LENGTH 48
 
 #define FIRST_ARG_IS_FLOAT          (1UL << 0)
-#define FIRST_ARG_IS_UNSIGNED       (1UL << 1)
+#define FIRST_ARG_IS_SIGNED       (1UL << 1)
 
 #define SECOND_ARG_IS_FLOAT         (1UL << 2)
-#define SECOND_ARG_IS_UNSIGNED      (1UL << 3)
+#define SECOND_ARG_IS_SIGNED      (1UL << 3)
 
 #define THIRD_ARG_IS_FLOAT          (1UL << 4)
-#define THIRD_ARG_IS_UNSIGNED       (1UL << 5)
+#define THIRD_ARG_IS_SIGNED       (1UL << 5)
 
 #define FOURTH_ARG_IS_FLOAT         (1UL << 6)
-#define FOURTH_ARG_IS_UNSIGNED      (1UL << 7)
+#define FOURTH_ARG_IS_SIGNED      (1UL << 7)
 
 #define RETURN_VAL_IS_FLOAT         (1UL << 0)
-#define RETURN_VAL_IS_UNSIGNED      (1UL << 1)
+#define RETURN_VAL_IS_SIGNED      (1UL << 1)
 
 #define NO_RETURN_VALUE             (~0)
 
@@ -68,7 +68,7 @@ struct TraceEntry_t {
 struct ConversionResult {
     uint32_t result;
     bool is_float = {false};
-    bool is_unsigned = {false};
+    bool is_signed = {false};
 };
 
 struct NVTraceEntry_t {
