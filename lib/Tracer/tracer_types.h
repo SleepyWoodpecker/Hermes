@@ -6,7 +6,7 @@
 
 #define FUNC_NAME_MAX_SIZE          16
 #define MAX_NO_ARGUMENTS_TRACKED    4
-#define MAX_EXCEPTION_STRING_LENGTH 128
+#define MAX_EXCEPTION_STRING_LENGTH 48
 
 #define FIRST_ARG_IS_FLOAT          (1UL << 0)
 #define FIRST_ARG_IS_UNSIGNED       (1UL << 1)
