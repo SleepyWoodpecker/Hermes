@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <type_traits>
 #include <cstdarg>
+#include <atomic>
 
 #include <Arduino.h>
 #include <freertos/FreeRTOS.h>
@@ -19,6 +20,14 @@ public:
      * @brief: initialize tracer with queue sizem, timer interrupt interval as well as method of transporting logs out of system
      */
     Tracer(TraceLogger &logger, int queue_size = 100);
+
+    /**
+     * @brief: get singleton instance
+     * Initialization is slightly scuffed, but it is what it is
+     */
+    static Tracer* get_instance() {
+        return _instance;
+    }
 
     /**
      * @brief: convert any generic argument into a uint32_t so that it can be stored in TraceEntry
@@ -42,7 +51,7 @@ public:
      * @brief: trace function exit
      */
     template <typename T>
-    void trace_function_exit(const char* func_name, T return_val);
+    void trace_function_exit(const char* func_name, T return_val, bool capture_return);
 
     /**
      * @brief: trace application exception, flush right after
@@ -70,9 +79,17 @@ public:
         instance->log_traces(NULL);
     }
 
+    template <typename Func, typename... Args>
+    static decltype(auto) trace_full_function(const char *func_name, Func&& func, Args... args);
+
 private:
+    // facilitate singleton instance
+    // assume for now that sharing the tracer among different cores works fine
+    static inline Tracer *_instance = nullptr;
+
     QueueHandle_t _task_message_queue = NULL;
-    uint32_t _current_trace_id = {0};
+    std::atomic<uint32_t> _current_trace_id = {0};
+    std::atomic<uint32_t> _current_function_call_id = {0};
 
     TraceLogger *_logger = nullptr;
 };
@@ -146,7 +163,7 @@ void Tracer::trace_function_entry(const char* func_name, Args... args) {
 }
 
 template <typename T>
-void Tracer::trace_function_exit(const char* func_name, T return_val) {
+void Tracer::trace_function_exit(const char* func_name, T return_val, bool capture_return) {
     TraceEntry_t entry = {
         .trace_type = Event_t::EXIT,
         .core_id = xTaskGetCoreID(NULL),
@@ -158,8 +175,12 @@ void Tracer::trace_function_exit(const char* func_name, T return_val) {
     ConversionResult r;
     convert_argument(return_val, r);
 
-    entry.function_entry.return_val = r.result;
-    entry.function_entry.val_types = (r.is_float) | (r.is_unsigned << 1);
+    if (capture_return) {
+        entry.function_entry.return_val = r.result;
+        entry.function_entry.val_types = (r.is_float) | (r.is_unsigned << 1);
+    } else {
+        entry.function_entry.val_types = NO_RETURN_VALUE;
+    }
 
     // do a non-blocking send
     BaseType_t wake = false;
@@ -170,5 +191,24 @@ void Tracer::trace_function_exit(const char* func_name, T return_val) {
     );
 }
 
+template <typename Func, typename... Args>
+decltype(auto) Tracer::trace_full_function(const char *func_name, Func&& func, Args... args) {
+    Tracer::get_instance()->trace_function_entry(func_name, args...);
+
+    using func_return = std::invoke_result_t<Func>;
+    if constexpr (std::is_void<func_return>()) {
+        func();
+        Tracer::get_instance()->trace_function_exit(func_name, 0, false);
+        return;
+    } else {
+        decltype(auto) res = func();
+        Tracer::get_instance()->trace_function_exit(func_name, res, true);
+        return res;
+    }
+}
+
+
+#define TRACE_BLOCK(BODY, ...)\
+    Tracer::trace_full_function(__func__, [&](){ BODY }, ##__VA_ARGS__)
 
 #endif

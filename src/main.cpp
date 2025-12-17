@@ -6,11 +6,11 @@ SerialLogger logger("\r\n");
 Tracer tracer(logger, 100);
 
 int try_add(int a, int b) {
-    tracer.trace_function_entry("try_add", a, b);
-    int ret_value = a + b;
-    tracer.trace_function_exit("try_add", ret_value);
+    return TRACE_BLOCK({
+        int ret_value = a + b;
 
-    return ret_value;
+        return ret_value;
+    }, a, b);
 }
 
 void setup() {
@@ -20,7 +20,7 @@ void setup() {
         Serial.printf("Welp!");
     }
 
-    delay(100);
+    delay(2.5);
 
     // register the panic handler
     set_arduino_panic_handler(Tracer::static_panic_handler, (void *)&tracer);
@@ -40,5 +40,8 @@ void loop() {
     int res = try_add(3, 4);
     res = try_add(4, 5);
 
-    assert(0);
+    delay(1000);
+
+    // int *p = NULL;
+    // *p = 42;
 }

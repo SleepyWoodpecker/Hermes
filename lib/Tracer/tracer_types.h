@@ -23,6 +23,8 @@
 #define RETURN_VAL_IS_FLOAT         (1UL << 0)
 #define RETURN_VAL_IS_UNSIGNED      (1UL << 1)
 
+#define NO_RETURN_VALUE             (~0)
+
 #define TRACER_TAG "TRACER"
 
 // tracer types
