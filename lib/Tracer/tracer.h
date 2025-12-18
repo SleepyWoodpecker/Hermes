@@ -45,13 +45,13 @@ public:
      * @brief: trace entrypoint into a function
      */
     template <typename... Args>
-    void trace_function_entry(const char* func_name, int func_call_no, Args... args);
+    void trace_function_entry(const char* func_name, uint32_t func_call_no, Args... args);
 
     /**
      * @brief: trace function exit
      */
     template <typename T>
-    void trace_function_exit(const char* func_name, T return_val, int func_call_no, bool capture_return);
+    void trace_function_exit(const char* func_name, T return_val, uint32_t func_call_no, bool capture_return);
 
     /**
      * @brief: trace application exception, flush right after
@@ -68,6 +68,15 @@ public:
 
         instance->trace_application_exception(info, NULL);
     }
+
+    /**
+     * @brief: track the restarts of a device as well
+     * this is an add-on to exceptions, just in case some exceptions cannot be captured
+     * by the panic handler (like a WDT reset)
+     */
+    void trace_application_restart();
+
+    void sync_logger();
 
     /**
      * @brief: consumer task for tracer
@@ -141,7 +150,7 @@ void Tracer::fill_args(TraceFunctionEntry_t& entry, Args... args) {
 }
 
 template <typename... Args>
-void Tracer::trace_function_entry(const char* func_name, int func_call_no, Args... args) {
+void Tracer::trace_function_entry(const char* func_name, uint32_t func_call_no, Args... args) {
     TraceEntry_t entry = {
         .trace_type = Event_t::ENTER,
         .core_id = xTaskGetCoreID(NULL),
@@ -164,7 +173,7 @@ void Tracer::trace_function_entry(const char* func_name, int func_call_no, Args.
 }
 
 template <typename T>
-void Tracer::trace_function_exit(const char* func_name, T return_val, int func_call_no, bool capture_return) {
+void Tracer::trace_function_exit(const char* func_name, T return_val, uint32_t func_call_no, bool capture_return) {
     TraceEntry_t entry = {
         .trace_type = Event_t::EXIT,
         .core_id = xTaskGetCoreID(NULL),
@@ -214,5 +223,12 @@ decltype(auto) Tracer::trace_full_function(const char *func_name, Func&& func, A
 
 #define TRACE_BLOCK(BODY, ...)\
     Tracer::trace_full_function(__func__, [&](){ BODY }, ##__VA_ARGS__)
+
+// issue the sync word, then send reset information
+// call only after the logger has been intiialized
+#define TRACER_SYNC_AND_INIT() do {                              \
+    Tracer::get_instance()->sync_logger();                       \
+    Tracer::get_instance()->trace_application_restart();         \
+} while (0);
 
 #endif

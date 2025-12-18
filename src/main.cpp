@@ -15,15 +15,17 @@ int try_add(int a, int b) {
 
 void setup() {
     Serial.begin(115200);
+    delay(100);
 
     if (!logger.begin()) {
         Serial.printf("Welp!");
     }
 
-    delay(2.5);
 
     // register the panic handler
     set_arduino_panic_handler(Tracer::static_panic_handler, (void *)&tracer);
+
+    TRACER_SYNC_AND_INIT();
 
     xTaskCreatePinnedToCore(
         Tracer::static_log_traces,
@@ -42,6 +44,5 @@ void loop() {
 
     delay(1000);
 
-    // int *p = NULL;
-    // *p = 42;
+    for (;;) {}
 }

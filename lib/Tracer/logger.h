@@ -13,6 +13,8 @@ class TraceLogger {
     public:
         // test that the transport method has been established
         virtual bool begin() = 0;
+        //largely for the serial method to sync with its reader
+        virtual void sync(size_t packet_size) = 0;
         virtual void log_raw(uint8_t *data, size_t length) = 0;
         virtual void log_pretty(TraceEntry_t &data) = 0;
 };
@@ -22,6 +24,7 @@ class SerialLogger : public TraceLogger {
         SerialLogger(const char *control_sequence);
 
         bool begin();
+        void sync(size_t packet_size);
         void log_raw(uint8_t *data, size_t length);
         void log_pretty(TraceEntry_t &data);
 

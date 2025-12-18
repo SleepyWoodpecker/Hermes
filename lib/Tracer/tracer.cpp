@@ -28,6 +28,21 @@ void Tracer::trace_application_exception(arduino_panic_info_t *info, void *arg) 
     _logger->log_raw(reinterpret_cast<uint8_t *>(&entry), sizeof(entry));
 }
 
+void Tracer::trace_application_restart() {
+    TraceEntry_t entry = {
+        .trace_type = Event_t::RESTART,
+        .restart_entry = {
+            .restart_reason = esp_reset_reason(),
+        },
+    };
+
+    _logger->log_raw(reinterpret_cast<uint8_t *>(&entry), sizeof(entry));
+}
+
+void Tracer::sync_logger() {
+    _logger->sync(sizeof(TraceEntry_t));
+}
+
 void *Tracer::log_traces(void *args) {
     TraceEntry_t entry = {};
     for (;;) {

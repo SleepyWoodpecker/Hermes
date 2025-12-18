@@ -11,7 +11,14 @@ bool SerialLogger::begin() {
 
 void SerialLogger::log_raw(uint8_t *data, size_t length) {
     Serial.write(data, length);
-    Serial.write(_control_sequence, _control_sequence_len);
+    Serial.write(_control_sequence, _control_sequence_len); 
+}
+
+void SerialLogger::sync(size_t packet_size) { 
+    for (int i = 0; i < packet_size; ++i) {
+        Serial.print(0);
+    }
+    Serial.write(_control_sequence, _control_sequence_len); 
 }
 
 void SerialLogger::log_pretty(TraceEntry_t &data) {

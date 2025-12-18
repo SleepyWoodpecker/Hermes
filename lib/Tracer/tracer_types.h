@@ -31,7 +31,8 @@
 enum Event_t {
     ENTER,
     EXIT,
-    PANIC
+    PANIC,
+    RESTART
 };
 
 struct TraceFunctionEntry_t {
@@ -53,6 +54,10 @@ struct TracePanicEntry_t {
     char exception_reason[MAX_EXCEPTION_STRING_LENGTH];
 };
 
+struct TraceRestartEntry_t {
+    esp_reset_reason_t restart_reason;
+};
+
 struct TraceEntry_t {
     Event_t trace_type;
     BaseType_t core_id;
@@ -62,6 +67,7 @@ struct TraceEntry_t {
     union {
         TraceFunctionEntry_t function_entry;
         TracePanicEntry_t panic_entry;
+        TraceRestartEntry_t restart_entry;
     };
 };
 
