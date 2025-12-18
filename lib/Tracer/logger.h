@@ -17,6 +17,7 @@ class TraceLogger {
         virtual void sync(size_t packet_size) = 0;
         virtual void log_raw(uint8_t *data, size_t length) = 0;
         virtual void log_pretty(TraceEntry_t &data) = 0;
+        virtual void flush() = 0;
 };
 
 class SerialLogger : public TraceLogger {
@@ -27,6 +28,7 @@ class SerialLogger : public TraceLogger {
         void sync(size_t packet_size);
         void log_raw(uint8_t *data, size_t length);
         void log_pretty(TraceEntry_t &data);
+        void flush();
 
     private:
         // require a control sequence to ensure proper syncing with serial port

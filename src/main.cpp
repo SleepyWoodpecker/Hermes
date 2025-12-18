@@ -23,9 +23,10 @@ void setup() {
 
 
     // register the panic handler
-    set_arduino_panic_handler(Tracer::static_panic_handler, (void *)&tracer);
+    // set_arduino_panic_handler(Tracer::static_panic_handler, (void *)&tracer);
 
     TRACER_SYNC_AND_INIT();
+    delay(100);
 
     xTaskCreatePinnedToCore(
         Tracer::static_log_traces,
@@ -42,7 +43,6 @@ void loop() {
     int res = try_add(3, 4);
     res = try_add(4, 5);
 
-    delay(1000);
-
-    for (;;) {}
+    int *p = NULL;
+    *p = 42;
 }

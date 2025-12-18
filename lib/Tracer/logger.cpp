@@ -77,3 +77,5 @@ void SerialLogger::log_pretty(TraceEntry_t &data) {
             break;
     }
 }
+
+void SerialLogger::flush() { Serial.flush(); }

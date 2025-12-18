@@ -65,7 +65,7 @@ public:
         if (arg == nullptr) return;
 
         Tracer *instance = static_cast<Tracer*>(arg);
-
+        
         instance->trace_application_exception(info, NULL);
     }
 
